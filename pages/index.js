@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import Product from "../components/Product";
 import { PublicKey } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import dynamic from "next/dynamic";
 import HeadComponent from '../components/Head';
 
@@ -9,6 +11,7 @@ const TWITTER_HANDLE = "0xJobin";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 
 const App = () => {
+  const [products, setProducts] = useState([]);
 
   const WalletMultiButtonDynamic = dynamic(
     async () =>
@@ -27,6 +30,26 @@ const App = () => {
       </div>
     </div>
   );
+
+  useEffect(() => {
+    if (publicKey) {
+      fetch(`/api/fetchProducts`)
+      .then(response => response.json())
+      .then(data => {
+        setProducts(data);
+        console.log("products", data);
+      });
+    }
+  }, [publicKey]);
+
+  const renderItemBuyContainer = () => (
+    <div className="products-container">
+      {products.map((product) => (
+        <Product key={product.id} product={product} />
+      ))}
+    </div>
+  )
+
   return (
     <div className="App">
       <HeadComponent/>
@@ -37,7 +60,7 @@ const App = () => {
         </header>
 
         <main>
-        {publicKey ? 'Connected!' : renderNotConnectedContainer()}
+        {publicKey ? renderItemBuyContainer() : renderNotConnectedContainer()}
         </main>
 
         <div className="footer-container">
